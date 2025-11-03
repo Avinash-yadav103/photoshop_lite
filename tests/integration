@@ -1,0 +1,52 @@
+# Integration Tests for API Endpoints
+
+import unittest
+from backend.app import create_app
+
+class IntegrationTestCase(unittest.TestCase):
+    def setUp(self):
+        self.app = create_app('testing')
+        self.client = self.app.test_client()
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+
+    def tearDown(self):
+        self.app_context.pop()
+
+    def test_authentication(self):
+        response = self.client.post('/api/auth/login', json={
+            'username': 'testuser',
+            'password': 'testpassword'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('token', response.json)
+
+    def test_image_upload(self):
+        with open('tests/samples/test_image.jpg', 'rb') as img:
+            response = self.client.post('/api/assets/upload', data={'file': img})
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('url', response.json)
+
+    def test_image_edit(self):
+        response = self.client.post('/api/edits/apply', json={
+            'image_id': '12345',
+            'filters': {
+                'brightness': 1.2,
+                'contrast': 1.5
+            }
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('edited_image_url', response.json)
+
+    def test_video_processing(self):
+        response = self.client.post('/api/video/process', json={
+            'video_id': '67890',
+            'action': 'trim',
+            'start_time': 10,
+            'end_time': 60
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('processed_video_url', response.json)
+
+if __name__ == '__main__':
+    unittest.main()

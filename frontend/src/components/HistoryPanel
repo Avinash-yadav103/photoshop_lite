@@ -1,0 +1,40 @@
+import React, { useState } from 'react';
+
+const HistoryPanel = ({ history, onUndo, onRedo }) => {
+    const [currentIndex, setCurrentIndex] = useState(-1);
+
+    const handleUndo = () => {
+        if (currentIndex > 0) {
+            setCurrentIndex(currentIndex - 1);
+            onUndo();
+        }
+    };
+
+    const handleRedo = () => {
+        if (currentIndex < history.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+            onRedo();
+        }
+    };
+
+    return (
+        <div className="history-panel">
+            <h3>History</h3>
+            <button onClick={handleUndo} disabled={currentIndex <= 0}>
+                Undo
+            </button>
+            <button onClick={handleRedo} disabled={currentIndex >= history.length - 1}>
+                Redo
+            </button>
+            <ul>
+                {history.map((item, index) => (
+                    <li key={index} className={index === currentIndex ? 'active' : ''}>
+                        {item}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+
+export default HistoryPanel;

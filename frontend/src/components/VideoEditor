@@ -1,0 +1,57 @@
+import React, { useState } from 'react';
+
+const VideoEditor = () => {
+    const [videoFile, setVideoFile] = useState(null);
+    const [trimStart, setTrimStart] = useState(0);
+    const [trimEnd, setTrimEnd] = useState(0);
+    const [captions, setCaptions] = useState([]);
+    const [audioFile, setAudioFile] = useState(null);
+
+    const handleVideoUpload = (event) => {
+        setVideoFile(URL.createObjectURL(event.target.files[0]));
+    };
+
+    const handleTrimChange = (start, end) => {
+        setTrimStart(start);
+        setTrimEnd(end);
+    };
+
+    const handleAddCaption = (caption) => {
+        setCaptions([...captions, caption]);
+    };
+
+    const handleAudioUpload = (event) => {
+        setAudioFile(URL.createObjectURL(event.target.files[0]));
+    };
+
+    const handleExportVideo = () => {
+        // Logic to export the edited video
+    };
+
+    return (
+        <div className="video-editor">
+            <h2>Video Editor</h2>
+            <input type="file" accept="video/*" onChange={handleVideoUpload} />
+            {videoFile && <video src={videoFile} controls />}
+            <div>
+                <label>Trim Start:</label>
+                <input type="number" value={trimStart} onChange={(e) => handleTrimChange(e.target.value, trimEnd)} />
+                <label>Trim End:</label>
+                <input type="number" value={trimEnd} onChange={(e) => handleTrimChange(trimStart, e.target.value)} />
+            </div>
+            <input type="file" accept="audio/*" onChange={handleAudioUpload} />
+            <button onClick={handleExportVideo}>Export Video</button>
+            <div>
+                <h3>Captions</h3>
+                <input type="text" placeholder="Add a caption" onKeyDown={(e) => e.key === 'Enter' && handleAddCaption(e.target.value)} />
+                <ul>
+                    {captions.map((caption, index) => (
+                        <li key={index}>{caption}</li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+};
+
+export default VideoEditor;

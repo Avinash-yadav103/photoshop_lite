@@ -1,1 +1,9 @@
 GPT context: https://chatgpt.com/c/68dad355-fcb8-8327-a88f-722634c55e52
+
+
+White background and black text and black background and white text while uploading the image would be the issue in the OCR text recognization
+Skew Correction like Adobe Photoshop
+CHeck the processes of OCR before applying, stepwise detection 
+
+
+I can also do giving some text and paste it into certain format after generating that format using llm and Image library of python to put the text there.

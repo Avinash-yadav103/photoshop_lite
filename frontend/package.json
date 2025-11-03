@@ -1,0 +1,26 @@
+{
+  "name": "photoshop-lite",
+  "version": "1.0.0",
+  "description": "A professional image and video editing software built with Python, OpenCV, and Flask.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "redux": "^4.1.0",
+    "react-redux": "^7.2.5",
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-react-app": "^6.0.0"
+  },
+  "homepage": "http://localhost:3000",
+  "license": "MIT"
+}

@@ -1,0 +1,40 @@
+# Performance Tests for Image Processing
+
+import time
+import cv2
+import numpy as np
+import unittest
+from backend.app.services.image_service import apply_brightness, apply_contrast, apply_gaussian_blur
+
+class PerformanceTests(unittest.TestCase):
+
+    def setUp(self):
+        # Load a sample image for testing
+        self.image = cv2.imread('samples/images/sample_image.jpg')
+
+    def test_brightness_performance(self):
+        start_time = time.time()
+        result = apply_brightness(self.image, 50)  # Adjust brightness
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"Brightness adjustment took {duration:.6f} seconds")
+        self.assertIsNotNone(result)
+
+    def test_contrast_performance(self):
+        start_time = time.time()
+        result = apply_contrast(self.image, 1.5)  # Adjust contrast
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"Contrast adjustment took {duration:.6f} seconds")
+        self.assertIsNotNone(result)
+
+    def test_gaussian_blur_performance(self):
+        start_time = time.time()
+        result = apply_gaussian_blur(self.image, 5)  # Apply Gaussian blur
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"Gaussian blur took {duration:.6f} seconds")
+        self.assertIsNotNone(result)
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,0 +1,15 @@
+Flask
+opencv-python
+numpy
+Pillow
+moviepy
+ffmpeg-python
+scikit-image
+scikit-learn
+SQLAlchemy
+psycopg2-binary
+celery
+redis
+tensorflow
+torch
+ torchvision
