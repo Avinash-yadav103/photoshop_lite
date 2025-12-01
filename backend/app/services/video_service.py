@@ -1,4 +1,9 @@
-from moviepy.editor import VideoFileClip, concatenate_videoclips
+try:
+    from moviepy.editor import VideoFileClip, concatenate_videoclips
+    MOVIEPY_AVAILABLE = True
+except ImportError:
+    MOVIEPY_AVAILABLE = False
+    print("Warning: moviepy not available. Video processing features will be disabled.")
 import os
 
 class VideoService:
@@ -43,3 +48,14 @@ class VideoService:
         video = VideoFileClip(video_path)
         frame = video.get_frame(time)
         return frame
+
+def process_video(video_data, operation_type, **kwargs):
+    """
+    Process video with specified operation.
+    Placeholder function for video processing.
+    """
+    if not MOVIEPY_AVAILABLE:
+        raise Exception("Video processing is not available. MoviePy is not installed.")
+    
+    # Placeholder implementation
+    return {"status": "success", "message": f"Video processing '{operation_type}' completed"}

@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime
-from backend.app import db
+from app import db
 
 class Project(db.Model):
     __tablename__ = 'projects'

@@ -1,4 +1,6 @@
 Flask
+Flask-SQLAlchemy
+Flask-CORS
 opencv-python
 numpy
 Pillow
@@ -12,4 +14,4 @@ celery
 redis
 tensorflow
 torch
- torchvision
+torchvision

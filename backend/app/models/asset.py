@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, DateTime
-from backend.app import db
+from app import db
 
 class Asset(db.Model):
     __tablename__ = 'assets'
