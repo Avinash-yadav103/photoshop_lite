@@ -2,13 +2,22 @@ import {
   SET_CURRENT_IMAGE,
   SET_LOADING,
   SET_ERROR,
-  CLEAR_IMAGE
+  CLEAR_IMAGE,
+  SET_EDITOR_STATE
 } from '../actions/imageActions';
 
 const initialState = {
   currentImage: null,
   loading: false,
-  error: null
+  error: null,
+  // Editor state persistence
+  editorState: {
+    previewUrl: null,
+    imageId: null,
+    selectedFile: null,
+    imageDimensions: { width: 0, height: 0 },
+    zoom: 100
+  }
 };
 
 const imageReducer = (state = initialState, action) => {
@@ -30,8 +39,18 @@ const imageReducer = (state = initialState, action) => {
         error: action.payload,
         loading: false
       };
+    case SET_EDITOR_STATE:
+      return {
+        ...state,
+        editorState: {
+          ...state.editorState,
+          ...action.payload
+        }
+      };
     case CLEAR_IMAGE:
-      return initialState;
+      return {
+        ...initialState
+      };
     default:
       return state;
   }

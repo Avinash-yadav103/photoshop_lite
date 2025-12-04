@@ -3,6 +3,7 @@ export const SET_CURRENT_IMAGE = 'SET_CURRENT_IMAGE';
 export const SET_LOADING = 'SET_LOADING';
 export const SET_ERROR = 'SET_ERROR';
 export const CLEAR_IMAGE = 'CLEAR_IMAGE';
+export const SET_EDITOR_STATE = 'SET_EDITOR_STATE';
 
 // Action Creators
 export const setCurrentImage = (image) => ({
@@ -22,4 +23,10 @@ export const setError = (error) => ({
 
 export const clearImage = () => ({
   type: CLEAR_IMAGE
+});
+
+// Store the full editor state (previewUrl, imageId, dimensions, etc.)
+export const setEditorState = (editorState) => ({
+  type: SET_EDITOR_STATE,
+  payload: editorState
 });

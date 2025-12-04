@@ -2,40 +2,41 @@ import {
   ADD_TO_HISTORY,
   UNDO,
   REDO,
-  CLEAR_HISTORY
+  CLEAR_HISTORY,
+  GO_TO_HISTORY
 } from '../actions/historyActions';
 
 const initialState = {
-  past: [],
-  present: null,
-  future: []
+  history: [],      // Array of all history items with image snapshots
+  currentIndex: -1  // Current position in history (-1 means no history)
 };
 
 const historyReducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_TO_HISTORY:
+      // Remove any future history when adding new item
+      const newHistory = state.history.slice(0, state.currentIndex + 1);
       return {
-        past: state.present ? [...state.past, state.present] : state.past,
-        present: action.payload,
-        future: []
+        history: [...newHistory, action.payload],
+        currentIndex: newHistory.length
       };
     case UNDO:
-      if (state.past.length === 0) return state;
-      const previous = state.past[state.past.length - 1];
-      const newPast = state.past.slice(0, state.past.length - 1);
+      if (state.currentIndex <= 0) return state;
       return {
-        past: newPast,
-        present: previous,
-        future: state.present ? [state.present, ...state.future] : state.future
+        ...state,
+        currentIndex: state.currentIndex - 1
       };
     case REDO:
-      if (state.future.length === 0) return state;
-      const next = state.future[0];
-      const newFuture = state.future.slice(1);
+      if (state.currentIndex >= state.history.length - 1) return state;
       return {
-        past: state.present ? [...state.past, state.present] : state.past,
-        present: next,
-        future: newFuture
+        ...state,
+        currentIndex: state.currentIndex + 1
+      };
+    case GO_TO_HISTORY:
+      if (action.payload < 0 || action.payload >= state.history.length) return state;
+      return {
+        ...state,
+        currentIndex: action.payload
       };
     case CLEAR_HISTORY:
       return initialState;

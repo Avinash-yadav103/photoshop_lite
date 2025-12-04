@@ -1,21 +1,25 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './ImageEditor.css';
 import FilterPanels from '../FilterPanels/FilterPanels';
 import HistoryPanel from '../HistoryPanel/HistoryPanel';
 import { Icons } from '../Icons';
-import { setCurrentImage, setLoading } from '../../store/actions/imageActions';
+import { setCurrentImage, setLoading, setEditorState, clearImage } from '../../store/actions/imageActions';
+import { addToHistory, clearHistory } from '../../store/actions/historyActions';
 import { assetAPI, imageAPI } from '../../api';
 import { isValidImageFile, fileToBase64 } from '../../utils/fileHelpers';
 
 const ImageEditor = () => {
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.image);
+  const { loading, editorState } = useSelector((state) => state.image);
+  
+  // Initialize state from Redux (persisted) or defaults
   const [selectedFile, setSelectedFile] = useState(null);
-  const [imageId, setImageId] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [zoom, setZoom] = useState(100);
-  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  const [imageId, setImageId] = useState(editorState?.imageId || null);
+  const [previewUrl, setPreviewUrl] = useState(editorState?.previewUrl || null);
+  const [zoom, setZoom] = useState(editorState?.zoom || 100);
+  const [imageDimensions, setImageDimensions] = useState(editorState?.imageDimensions || { width: 0, height: 0 });
+  const [displayDimensions, setDisplayDimensions] = useState({ width: 0, height: 0 });
   const [showHistory, setShowHistory] = useState(false);
   const [isCropping, setIsCropping] = useState(false);
   const [cropStart, setCropStart] = useState(null);
@@ -24,6 +28,32 @@ const ImageEditor = () => {
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
+
+  // Persist editor state to Redux whenever it changes
+  useEffect(() => {
+    dispatch(setEditorState({
+      previewUrl,
+      imageId,
+      imageDimensions,
+      zoom
+    }));
+  }, [previewUrl, imageId, imageDimensions, zoom, dispatch]);
+
+  // Handle history item selection - restore to that state
+  const handleHistorySelect = useCallback((historyItem) => {
+    if (historyItem.imageData) {
+      setPreviewUrl(historyItem.imageData);
+      // Update dimensions from the restored image
+      const img = new Image();
+      img.onload = () => {
+        setImageDimensions({ width: img.width, height: img.height });
+      };
+      img.src = historyItem.imageData;
+    }
+    if (historyItem.imageId) {
+      setImageId(historyItem.imageId);
+    }
+  }, []);
 
   const handleFileSelect = async (event) => {
     const file = event.target.files[0];
@@ -58,6 +88,16 @@ const ImageEditor = () => {
       
       setImageId(uploadedImage.id);
       dispatch(setCurrentImage(uploadedImage));
+      
+      // Add initial state to history
+      dispatch(addToHistory({
+        id: Date.now(),
+        operation: 'Upload',
+        params: { filename: selectedFile.name },
+        timestamp: new Date().toISOString(),
+        imageData: previewUrl,  // Store the original image
+        imageId: uploadedImage.id
+      }));
     } catch (error) {
       console.error('Upload error:', error);
       alert('Failed to upload image');
@@ -66,14 +106,16 @@ const ImageEditor = () => {
     }
   };
 
-  const handleDownload = async () => {
-    if (!imageId) return;
+  const handleDownload = () => {
+    if (!previewUrl) {
+      alert('No image to download');
+      return;
+    }
 
     try {
-      const response = await assetAPI.downloadAsset(imageId);
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      // Download from the current preview (base64 image)
       const link = document.createElement('a');
-      link.href = url;
+      link.href = previewUrl;
       link.setAttribute('download', `edited_image_${Date.now()}.png`);
       document.body.appendChild(link);
       link.click();
@@ -90,10 +132,12 @@ const ImageEditor = () => {
     setImageId(null);
     setZoom(100);
     setImageDimensions({ width: 0, height: 0 });
+    setDisplayDimensions({ width: 0, height: 0 });
     setIsCropping(false);
     setCropStart(null);
     setCropEnd(null);
-    dispatch(setCurrentImage(null));
+    dispatch(clearImage());  // Clear all image state in Redux
+    dispatch(clearHistory());  // Clear history on reset
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -110,12 +154,31 @@ const ImageEditor = () => {
     setCropEnd(null);
   };
 
+  // Calculate coordinates relative to actual image dimensions
+  const getImageCoordinates = (e) => {
+    if (!imageRef.current) return { x: 0, y: 0 };
+    
+    const rect = imageRef.current.getBoundingClientRect();
+    
+    // Get click position relative to the displayed image
+    const displayX = e.clientX - rect.left;
+    const displayY = e.clientY - rect.top;
+    
+    // Calculate scale factors between displayed size and actual image dimensions
+    const scaleX = imageDimensions.width / rect.width;
+    const scaleY = imageDimensions.height / rect.height;
+    
+    // Convert to actual image coordinates
+    const x = displayX * scaleX;
+    const y = displayY * scaleY;
+    
+    return { x, y, scaleX, scaleY, displayX, displayY };
+  };
+
   const handleMouseDown = (e) => {
     if (!isCropping || !imageRef.current) return;
     
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / (zoom / 100);
-    const y = (e.clientY - rect.top) / (zoom / 100);
+    const { x, y } = getImageCoordinates(e);
     
     setCropStart({ x, y });
     setCropEnd({ x, y });
@@ -125,11 +188,13 @@ const ImageEditor = () => {
   const handleMouseMove = (e) => {
     if (!isDragging || !isCropping || !imageRef.current) return;
     
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min((e.clientX - rect.left) / (zoom / 100), imageDimensions.width));
-    const y = Math.max(0, Math.min((e.clientY - rect.top) / (zoom / 100), imageDimensions.height));
+    const { x, y } = getImageCoordinates(e);
     
-    setCropEnd({ x, y });
+    // Clamp to image bounds
+    const clampedX = Math.max(0, Math.min(x, imageDimensions.width));
+    const clampedY = Math.max(0, Math.min(y, imageDimensions.height));
+    
+    setCropEnd({ x: clampedX, y: clampedY });
   };
 
   const handleMouseUp = () => {
@@ -164,6 +229,16 @@ const ImageEditor = () => {
           width: response.data.dimensions.cropped.width,
           height: response.data.dimensions.cropped.height
         });
+        
+        // Add crop to history
+        dispatch(addToHistory({
+          id: Date.now(),
+          operation: 'Crop',
+          params: cropRect,
+          timestamp: new Date().toISOString(),
+          imageData: response.data.image,
+          imageId: response.data.id || imageId
+        }));
       }
       
       if (response.data.id) {
@@ -280,41 +355,60 @@ const ImageEditor = () => {
                   alt="Preview" 
                   className="preview-image" 
                   draggable={false}
+                  onLoad={(e) => {
+                    // Track displayed dimensions for crop overlay positioning
+                    setDisplayDimensions({ 
+                      width: e.target.offsetWidth, 
+                      height: e.target.offsetHeight 
+                    });
+                  }}
                 />
-                {isCropping && cropStart && cropEnd && (
-                  <>
-                    <div 
-                      className="crop-overlay"
-                      style={{
-                        clipPath: `polygon(
-                          0 0, 
-                          100% 0, 
-                          100% 100%, 
-                          0 100%, 
-                          0 0,
-                          ${Math.min(cropStart.x, cropEnd.x)}px ${Math.min(cropStart.y, cropEnd.y)}px,
-                          ${Math.min(cropStart.x, cropEnd.x)}px ${Math.max(cropStart.y, cropEnd.y)}px,
-                          ${Math.max(cropStart.x, cropEnd.x)}px ${Math.max(cropStart.y, cropEnd.y)}px,
-                          ${Math.max(cropStart.x, cropEnd.x)}px ${Math.min(cropStart.y, cropEnd.y)}px,
-                          ${Math.min(cropStart.x, cropEnd.x)}px ${Math.min(cropStart.y, cropEnd.y)}px
-                        )`
-                      }}
-                    />
-                    <div 
-                      className="crop-selection"
-                      style={{
-                        left: Math.min(cropStart.x, cropEnd.x),
-                        top: Math.min(cropStart.y, cropEnd.y),
-                        width: Math.abs(cropEnd.x - cropStart.x),
-                        height: Math.abs(cropEnd.y - cropStart.y)
-                      }}
-                    >
-                      <div className="crop-dimensions">
-                        {Math.round(Math.abs(cropEnd.x - cropStart.x))} x {Math.round(Math.abs(cropEnd.y - cropStart.y))}
+                {isCropping && cropStart && cropEnd && imageRef.current && (() => {
+                  // Convert actual image coordinates to display coordinates for the overlay
+                  const rect = imageRef.current.getBoundingClientRect();
+                  const scaleX = rect.width / imageDimensions.width;
+                  const scaleY = rect.height / imageDimensions.height;
+                  
+                  const displayLeft = Math.min(cropStart.x, cropEnd.x) * scaleX;
+                  const displayTop = Math.min(cropStart.y, cropEnd.y) * scaleY;
+                  const displayWidth = Math.abs(cropEnd.x - cropStart.x) * scaleX;
+                  const displayHeight = Math.abs(cropEnd.y - cropStart.y) * scaleY;
+                  
+                  return (
+                    <>
+                      <div 
+                        className="crop-overlay"
+                        style={{
+                          clipPath: `polygon(
+                            0 0, 
+                            100% 0, 
+                            100% 100%, 
+                            0 100%, 
+                            0 0,
+                            ${displayLeft}px ${displayTop}px,
+                            ${displayLeft}px ${displayTop + displayHeight}px,
+                            ${displayLeft + displayWidth}px ${displayTop + displayHeight}px,
+                            ${displayLeft + displayWidth}px ${displayTop}px,
+                            ${displayLeft}px ${displayTop}px
+                          )`
+                        }}
+                      />
+                      <div 
+                        className="crop-selection"
+                        style={{
+                          left: displayLeft,
+                          top: displayTop,
+                          width: displayWidth,
+                          height: displayHeight
+                        }}
+                      >
+                        <div className="crop-dimensions">
+                          {Math.round(Math.abs(cropEnd.x - cropStart.x))} x {Math.round(Math.abs(cropEnd.y - cropStart.y))}
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
+                    </>
+                  );
+                })()}
               </div>
             ) : (
               <div className="placeholder" onClick={() => fileInputRef.current?.click()}>
@@ -420,18 +514,16 @@ const ImageEditor = () => {
         )}
       </div>
 
-      {/* History Panel - Toggleable */}
-      {showHistory && (
-        <div className="history-drawer">
-          <div className="history-drawer-header">
-            <h3><Icons.History size={18} /> History</h3>
-            <button className="close-btn" onClick={() => setShowHistory(false)}>
-              <Icons.Close size={18} />
-            </button>
-          </div>
-          <HistoryPanel />
+      {/* History Panel - Toggleable (always mounted to maintain subscription) */}
+      <div className={`history-drawer ${showHistory ? 'open' : ''}`}>
+        <div className="history-drawer-header">
+          <h3><Icons.History size={18} /> History</h3>
+          <button className="close-btn" onClick={() => setShowHistory(false)}>
+            <Icons.Close size={18} />
+          </button>
         </div>
-      )}
+        <HistoryPanel onHistorySelect={handleHistorySelect} />
+      </div>
     </div>
   );
 };

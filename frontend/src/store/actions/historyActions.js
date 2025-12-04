@@ -3,6 +3,7 @@ export const ADD_TO_HISTORY = 'ADD_TO_HISTORY';
 export const UNDO = 'UNDO';
 export const REDO = 'REDO';
 export const CLEAR_HISTORY = 'CLEAR_HISTORY';
+export const GO_TO_HISTORY = 'GO_TO_HISTORY';
 
 // Action Creators
 export const addToHistory = (operation) => ({
@@ -20,4 +21,9 @@ export const redo = () => ({
 
 export const clearHistory = () => ({
   type: CLEAR_HISTORY
+});
+
+export const goToHistory = (index) => ({
+  type: GO_TO_HISTORY,
+  payload: index
 });

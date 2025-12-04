@@ -101,12 +101,19 @@ const FilterPanels = ({ imageId, onImageUpdate, onImageIdChange }) => {
         onImageIdChange(response.data.id);
       }
 
-      dispatch(addToHistory({
+      // Save to history with the image snapshot
+      const historyEntry = {
         id: Date.now(),
         operation: filterName,
         params: params,
-        timestamp: new Date().toISOString()
-      }));
+        timestamp: new Date().toISOString(),
+        imageData: response?.data?.image || null,
+        imageId: response?.data?.id || imageId
+      };
+      
+      console.log('Dispatching to history:', historyEntry);
+      dispatch(addToHistory(historyEntry));
+      console.log('History dispatch complete');
 
     } catch (error) {
       console.error('Filter error:', error);
