@@ -4,61 +4,74 @@
 
 .panel-tabs {
   display: flex;
-  gap: 5px;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #3a3a3a;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
 }
 
 .panel-tabs button {
   flex: 1;
-  padding: 10px 5px;
-  background-color: #2a2a2a;
-  color: #999;
+  padding: 12px 8px;
+  background: rgba(30, 30, 46, 0.4);
+  color: #8892b0;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   transition: all 0.3s ease;
+  border-radius: 6px 6px 0 0;
 }
 
 .panel-tabs button:hover {
-  color: #ccc;
-  background-color: #333;
+  color: #ccd6f6;
+  background: rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
 }
 
 .panel-tabs button.active {
   color: #ffffff;
   border-bottom-color: #667eea;
-  background-color: #333;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 .panel-content {
   max-height: 600px;
   overflow-y: auto;
-  padding-right: 10px;
+  padding-right: 12px;
 }
 
 .panel-content::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .panel-content::-webkit-scrollbar-track {
-  background: #1e1e1e;
+  background: rgba(30, 30, 46, 0.4);
+  border-radius: 4px;
 }
 
 .panel-content::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 3px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  border: 2px solid rgba(30, 30, 46, 0.4);
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #764ba2 0%, #667eea 100%);
 }
 
 .filter-group {
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.4s ease;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-15px);
   }
   to {
     opacity: 1;
@@ -68,34 +81,69 @@
 
 .filter-group h4 {
   color: #ffffff;
-  margin-bottom: 15px;
-  font-size: 1rem;
-  border-bottom: 1px solid #3a3a3a;
-  padding-bottom: 10px;
+  margin-bottom: 18px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  padding-bottom: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .control {
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #2a2a2a;
-  border-radius: 8px;
+  margin-bottom: 22px;
+  padding: 18px;
+  background: rgba(102, 126, 234, 0.08);
+  border-radius: 10px;
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  transition: all 0.3s ease;
+}
+
+.control:hover {
+  background: rgba(102, 126, 234, 0.12);
+  border-color: rgba(102, 126, 234, 0.25);
+  transform: translateY(-2px);
 }
 
 .control label {
   display: block;
-  color: #cccccc;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  color: #ccd6f6;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .control input[type="range"] {
   width: 100%;
-  margin-bottom: 10px;
-  height: 6px;
-  background: #444;
-  border-radius: 3px;
+  margin-bottom: 12px;
+  height: 8px;
+  background: rgba(30, 30, 46, 0.6);
+  border-radius: 4px;
   outline: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  transition: all 0.2s ease;
+}
+
+.control input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
 }
 
 .control input[type="range"]::-webkit-slider-thumb {
