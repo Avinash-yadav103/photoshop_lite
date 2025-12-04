@@ -1,4 +1,7 @@
-def histogram_equalization(image):
+import cv2
+import numpy as np
+
+def equalize_histogram(image):
     """
     Applies histogram equalization to the input image to enhance contrast.
     

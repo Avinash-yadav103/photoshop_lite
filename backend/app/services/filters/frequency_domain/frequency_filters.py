@@ -1,49 +1,47 @@
-from scipy import ndimage
+import cv2
 import numpy as np
 
-def ideal_low_pass_filter(shape, cutoff):
-    rows, cols = shape
+def apply_frequency_filter(image, filter_type='lowpass', cutoff=30):
+    """
+    Apply frequency domain filter to an image.
+    
+    Parameters:
+    - image: Input image (BGR format)
+    - filter_type: Type of filter ('lowpass', 'highpass')
+    - cutoff: Cutoff frequency
+    
+    Returns:
+    - Filtered image
+    """
+    # Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Perform FFT
+    dft = cv2.dft(np.float32(gray), flags=cv2.DFT_COMPLEX_OUTPUT)
+    dft_shift = np.fft.fftshift(dft)
+    
+    rows, cols = gray.shape
     crow, ccol = rows // 2, cols // 2
-    x = np.linspace(-ccol, ccol - 1, cols)
-    y = np.linspace(-crow, crow - 1, rows)
-    X, Y = np.meshgrid(x, y)
-    radius = np.sqrt(X**2 + Y**2)
-    filter_mask = np.where(radius <= cutoff, 1, 0)
-    return filter_mask
-
-def butterworth_low_pass_filter(shape, cutoff, order=2):
-    rows, cols = shape
-    crow, ccol = rows // 2, cols // 2
-    x = np.linspace(-ccol, ccol - 1, cols)
-    y = np.linspace(-crow, crow - 1, rows)
-    X, Y = np.meshgrid(x, y)
-    radius = np.sqrt(X**2 + Y**2)
-    filter_mask = 1 / (1 + (radius / cutoff)**(2 * order))
-    return filter_mask
-
-def gaussian_low_pass_filter(shape, cutoff):
-    rows, cols = shape
-    crow, ccol = rows // 2, cols // 2
-    x = np.linspace(-ccol, ccol - 1, cols)
-    y = np.linspace(-crow, crow - 1, rows)
-    X, Y = np.meshgrid(x, y)
-    radius = np.sqrt(X**2 + Y**2)
-    filter_mask = np.exp(-(radius**2) / (2 * (cutoff**2)))
-    return filter_mask
-
-def apply_filter(image, filter_mask):
-    filtered_image = ndimage.convolve(image, filter_mask, mode='reflect')
-    return filtered_image
-
-def frequency_filter(image, filter_type='ideal', cutoff=30, order=2):
-    if filter_type == 'ideal':
-        filter_mask = ideal_low_pass_filter(image.shape, cutoff)
-    elif filter_type == 'butterworth':
-        filter_mask = butterworth_low_pass_filter(image.shape, cutoff, order)
-    elif filter_type == 'gaussian':
-        filter_mask = gaussian_low_pass_filter(image.shape, cutoff)
-    else:
-        raise ValueError("Unknown filter type: {}".format(filter_type))
-
-    filtered_image = apply_filter(image, filter_mask)
-    return filtered_image
+    
+    # Create mask
+    mask = np.zeros((rows, cols, 2), np.uint8)
+    
+    if filter_type == 'lowpass':
+        cv2.circle(mask, (ccol, crow), cutoff, (1, 1), -1)
+    elif filter_type == 'highpass':
+        mask[:] = 1
+        cv2.circle(mask, (ccol, crow), cutoff, (0, 0), -1)
+    
+    # Apply mask
+    fshift = dft_shift * mask
+    
+    # Inverse FFT
+    f_ishift = np.fft.ifftshift(fshift)
+    img_back = cv2.idft(f_ishift)
+    img_back = cv2.magnitude(img_back[:, :, 0], img_back[:, :, 1])
+    
+    # Normalize
+    img_back = cv2.normalize(img_back, None, 0, 255, cv2.NORM_MINMAX)
+    img_back = np.uint8(img_back)
+    
+    return img_back

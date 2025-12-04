@@ -1,55 +1,42 @@
-from skimage import feature, color
 import cv2
 import numpy as np
+from skimage import feature
 
-def extract_sift_features(image):
+def extract_sift(image):
     """
-    Extract SIFT features from the given image.
+    Extract SIFT features from the given image and draw keypoints.
     
     Parameters:
     - image: Input image in BGR format.
     
     Returns:
-    - keypoints: Detected keypoints.
-    - descriptors: SIFT descriptors for the keypoints.
+    - Image with SIFT keypoints drawn.
     """
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     sift = cv2.SIFT_create()
     keypoints, descriptors = sift.detectAndCompute(gray_image, None)
-    return keypoints, descriptors
+    
+    # Draw keypoints on the image
+    result = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    return result
 
-def extract_hog_features(image):
+def extract_hog(image):
     """
-    Extract HOG features from the given image.
+    Extract HOG features from the given image and return visualization.
     
     Parameters:
     - image: Input image in BGR format.
     
     Returns:
-    - hog_features: HOG feature vector.
+    - HOG visualization image.
     """
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     hog_features, hog_image = feature.hog(gray_image, 
                                           orientations=9, 
                                           pixels_per_cell=(8, 8), 
                                           cells_per_block=(2, 2), 
-                                          visualize=True, 
-                                          multichannel=False)
-    return hog_features
-
-def process_image(image_path):
-    """
-    Process the image to extract SIFT and HOG features.
+                                          visualize=True)
     
-    Parameters:
-    - image_path: Path to the input image.
-    
-    Returns:
-    - keypoints: Detected keypoints from SIFT.
-    - descriptors: SIFT descriptors.
-    - hog_features: HOG feature vector.
-    """
-    image = cv2.imread(image_path)
-    keypoints, descriptors = extract_sift_features(image)
-    hog_features = extract_hog_features(image)
-    return keypoints, descriptors, hog_features
+    # Normalize HOG image for display
+    hog_image = (hog_image * 255).astype(np.uint8)
+    return hog_image

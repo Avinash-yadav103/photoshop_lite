@@ -1,34 +1,35 @@
-from sklearn.decomposition import PCA
+import cv2
 import numpy as np
+from sklearn.decomposition import PCA
 
-def perform_pca(data, n_components=2):
+def apply_pca(image, n_components=50):
     """
-    Perform PCA on the given data.
-
+    Apply PCA to reduce dimensionality of image and reconstruct.
+    
     Parameters:
-    - data: np.ndarray, input data for PCA (shape: [n_samples, n_features])
-    - n_components: int, number of principal components to return
-
+    - image: Input image in BGR format
+    - n_components: Number of principal components
+    
     Returns:
-    - transformed_data: np.ndarray, data projected onto the principal components
-    - explained_variance: np.ndarray, variance explained by each principal component
+    - Reconstructed image after PCA
     """
+    # Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Reshape for PCA
+    original_shape = gray.shape
+    data = gray.reshape(-1, gray.shape[1])
+    
+    # Ensure n_components doesn't exceed data dimensions
+    n_components = min(n_components, min(data.shape))
+    
+    # Apply PCA
     pca = PCA(n_components=n_components)
-    transformed_data = pca.fit_transform(data)
-    explained_variance = pca.explained_variance_ratio_
-
-    return transformed_data, explained_variance
-
-def reconstruct_data(transformed_data, pca):
-    """
-    Reconstruct original data from PCA transformed data.
-
-    Parameters:
-    - transformed_data: np.ndarray, data projected onto the principal components
-    - pca: PCA object, fitted PCA model
-
-    Returns:
-    - reconstructed_data: np.ndarray, reconstructed original data
-    """
-    reconstructed_data = pca.inverse_transform(transformed_data)
-    return reconstructed_data
+    transformed = pca.fit_transform(data)
+    reconstructed = pca.inverse_transform(transformed)
+    
+    # Reshape back
+    reconstructed = reconstructed.reshape(original_shape)
+    reconstructed = np.uint8(np.clip(reconstructed, 0, 255))
+    
+    return reconstructed

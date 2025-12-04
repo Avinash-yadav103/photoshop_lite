@@ -1,18 +1,18 @@
-def morphological_operations(image, operation, kernel_size=3):
+import cv2
+import numpy as np
+
+def apply_morphology(image, operation, kernel_size=5):
     """
     Applies morphological operations to the given image.
 
     Parameters:
     - image: Input image on which to perform the operation.
     - operation: The morphological operation to perform ('dilate', 'erode', 'open', 'close').
-    - kernel_size: Size of the structuring element (default is 3).
+    - kernel_size: Size of the structuring element (default is 5).
 
     Returns:
     - The processed image after applying the morphological operation.
     """
-    import cv2
-    import numpy as np
-
     # Create a structuring element
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_size, kernel_size))
 

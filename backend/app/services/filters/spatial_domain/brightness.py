@@ -1,3 +1,6 @@
+import cv2
+import numpy as np
+
 def adjust_brightness(image, value):
     """
     Adjusts the brightness of an image.

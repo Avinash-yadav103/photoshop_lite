@@ -1,15 +1,19 @@
-from scipy.ndimage import gaussian_filter
+import cv2
 import numpy as np
 
-def apply_gaussian_blur(image, sigma=1.0):
+def apply_gaussian_blur(image, radius=5):
     """
     Applies Gaussian blur to the input image.
 
     Parameters:
-    - image: Input image as a NumPy array.
-    - sigma: Standard deviation for Gaussian kernel. Higher values result in more blur.
+    - image: Input image as a NumPy array (BGR format from OpenCV).
+    - radius: Radius for Gaussian kernel (must be odd). Higher values result in more blur.
 
     Returns:
     - Blurred image as a NumPy array.
     """
-    return gaussian_filter(image, sigma=sigma)
+    # Ensure radius is odd
+    if radius % 2 == 0:
+        radius += 1
+    
+    return cv2.GaussianBlur(image, (radius, radius), 0)

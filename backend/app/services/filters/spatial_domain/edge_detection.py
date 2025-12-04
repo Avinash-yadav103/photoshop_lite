@@ -1,3 +1,29 @@
+import cv2
+import numpy as np
+
+def detect_edges(image, method='sobel', threshold=50):
+    """
+    Detects edges in the image using specified method.
+    
+    Parameters:
+        image: Input image in BGR format
+        method: Edge detection method ('sobel', 'prewitt', 'laplacian', 'canny')
+        threshold: Threshold for edge detection
+    
+    Returns:
+        Edge-detected image
+    """
+    if method == 'sobel':
+        return apply_sobel_edge_detection(image, threshold)
+    elif method == 'prewitt':
+        return apply_prewitt_edge_detection(image)
+    elif method == 'laplacian':
+        return apply_laplacian_edge_detection(image)
+    elif method == 'canny':
+        return apply_canny_edge_detection(image)
+    else:
+        return apply_sobel_edge_detection(image, threshold)
+
 def apply_sobel_edge_detection(image, threshold=50):
     """
     Implements Sobel edge detection as per CSET344 Module I curriculum
