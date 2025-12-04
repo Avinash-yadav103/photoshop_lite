@@ -4,7 +4,7 @@ import './FilterPanels.css';
 import { imageAPI } from '../../api';
 import { addToHistory } from '../../store/actions/historyActions';
 
-const FilterPanels = ({ imageId }) => {
+const FilterPanels = ({ imageId, onImageUpdate, onImageIdChange }) => {
   const dispatch = useDispatch();
   const [activePanel, setActivePanel] = useState('spatial');
   const [loading, setLoading] = useState(false);
@@ -91,6 +91,16 @@ const FilterPanels = ({ imageId }) => {
           return;
       }
 
+      // Update the preview image with base64 data from response
+      if (response?.data?.image && onImageUpdate) {
+        onImageUpdate(response.data.image);
+      }
+      
+      // Update image ID to the new processed image
+      if (response?.data?.id && onImageIdChange) {
+        onImageIdChange(response.data.id);
+      }
+
       dispatch(addToHistory({
         id: Date.now(),
         operation: filterName,
@@ -98,10 +108,9 @@ const FilterPanels = ({ imageId }) => {
         timestamp: new Date().toISOString()
       }));
 
-      alert(`${filterName} filter applied successfully!`);
     } catch (error) {
       console.error('Filter error:', error);
-      alert(`Failed to apply ${filterName} filter`);
+      alert(`Failed to apply ${filterName} filter: ${error.response?.data?.error || error.message}`);
     } finally {
       setLoading(false);
     }

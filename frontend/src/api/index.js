@@ -35,6 +35,9 @@ export const imageAPI = {
   equalizeHistogram: (imageId) => client.post(`/edits/image/${imageId}/histogram-equalize`),
   detectEdges: (imageId, params) => client.post(`/edits/image/${imageId}/edge-detection`, params),
   
+  // Crop
+  cropImage: (imageId, params) => client.post(`/edits/image/${imageId}/crop`, params),
+  
   // Morphological Operations
   applyMorphology: (imageId, params) => client.post(`/edits/image/${imageId}/morphology`, params),
   cannyEdge: (imageId, params) => client.post(`/edits/image/${imageId}/canny-edge`, params),
