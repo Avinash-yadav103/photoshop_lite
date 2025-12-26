@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import './FilterPanels.css';
 import { imageAPI } from '../../api';
-import { addToHistory } from '../../store/actions/historyActions';
 
-const FilterPanels = ({ imageId, onImageUpdate, onImageIdChange }) => {
-  const dispatch = useDispatch();
+const FilterPanels = ({ imageId, onImageUpdate, onImageIdChange, onAddHistory }) => {
   const [activePanel, setActivePanel] = useState('spatial');
   const [loading, setLoading] = useState(false);
 
@@ -101,19 +98,20 @@ const FilterPanels = ({ imageId, onImageUpdate, onImageIdChange }) => {
         onImageIdChange(response.data.id);
       }
 
-      // Save to history with the image snapshot
-      const historyEntry = {
-        id: Date.now(),
-        operation: filterName,
-        params: params,
-        timestamp: new Date().toISOString(),
-        imageData: response?.data?.image || null,
-        imageId: response?.data?.id || imageId
-      };
-      
-      console.log('Dispatching to history:', historyEntry);
-      dispatch(addToHistory(historyEntry));
-      console.log('History dispatch complete');
+      // Save to history using the callback from parent
+      if (onAddHistory) {
+        const historyEntry = {
+          id: Date.now(),
+          operation: filterName,
+          params: params,
+          timestamp: new Date().toISOString(),
+          imageData: response?.data?.image || null,
+          imageId: response?.data?.id || imageId
+        };
+        
+        console.log('FilterPanels adding to history:', historyEntry.operation);
+        onAddHistory(historyEntry);
+      }
 
     } catch (error) {
       console.error('Filter error:', error);

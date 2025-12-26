@@ -334,8 +334,8 @@ def edit_video_trim(video_id):
     
     try:
         data = request.json or {}
-        start_time = data.get('start_time', 0)
-        end_time = data.get('end_time', 10)
+        start_time = float(data.get('start_time', 0))
+        end_time = float(data.get('end_time', 10))
         
         video_path = get_video_path(video_id)
         if not video_path:
@@ -345,11 +345,18 @@ def edit_video_trim(video_id):
         processed_video = video_service.trim_video(video_path, start_time, end_time)
         output_path = save_processed_video(processed_video, os.path.basename(video_path))
         
+        # Generate new video ID from output path
+        new_video_id = os.path.basename(output_path).split('_')[1] + '_' + os.path.basename(output_path).split('_')[2]
+        
         return jsonify({
             'message': 'Video trimmed successfully',
-            'filepath': output_path
+            'filepath': output_path,
+            'id': new_video_id,
+            'filename': os.path.basename(output_path)
         }), 200
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @edits_bp.route('/video/<video_id>/speed', methods=['POST'])
@@ -360,67 +367,28 @@ def edit_video_speed(video_id):
     
     try:
         data = request.json or {}
-        speed = data.get('speed', 1.0)
+        speed = float(data.get('speed', 1.0))
         
         video_path = get_video_path(video_id)
         if not video_path:
             return jsonify({'error': 'Video not found'}), 404
         
-        try:
-            from moviepy import VideoFileClip
-        except ImportError:
-            from moviepy.editor import VideoFileClip
-            
-        video = VideoFileClip(video_path)
-        processed_video = video.speedx(speed)
+        video_service = VideoService(UPLOAD_FOLDER)
+        processed_video = video_service.change_speed(video_path, speed)
         output_path = save_processed_video(processed_video, os.path.basename(video_path))
+        
+        # Generate new video ID from output path
+        new_video_id = os.path.basename(output_path).split('_')[1] + '_' + os.path.basename(output_path).split('_')[2]
         
         return jsonify({
             'message': 'Video speed changed successfully',
-            'filepath': output_path
+            'filepath': output_path,
+            'id': new_video_id,
+            'filename': os.path.basename(output_path)
         }), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@edits_bp.route('/video/<video_id>/extract-frames', methods=['POST'])
-def edit_video_extract_frames(video_id):
-    """Extract frames from video."""
-    if not MOVIEPY_AVAILABLE:
-        return jsonify({'error': 'Video processing is not available. MoviePy is not installed.'}), 503
-    
-    try:
-        data = request.json or {}
-        fps = data.get('fps', 1)
-        
-        video_path = get_video_path(video_id)
-        if not video_path:
-            return jsonify({'error': 'Video not found'}), 404
-        
-        try:
-            from moviepy import VideoFileClip
-        except ImportError:
-            from moviepy.editor import VideoFileClip
-            
-        video = VideoFileClip(video_path)
-        
-        # Extract frames at specified fps
-        frames_folder = os.path.join(UPLOAD_FOLDER, f'frames_{video_id}')
-        os.makedirs(frames_folder, exist_ok=True)
-        
-        duration = int(video.duration)
-        frame_interval = max(1, int(1/fps)) if fps < 1 else 1
-        frame_times = list(range(0, duration, frame_interval))[:100]  # Limit to 100 frames
-        
-        for idx, t in enumerate(frame_times):
-            frame = video.get_frame(t)
-            frame_path = os.path.join(frames_folder, f'frame_{idx:04d}.jpg')
-            cv2.imwrite(frame_path, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-        
-        return jsonify({
-            'message': f'Extracted {len(frame_times)} frames successfully',
-            'frames_folder': frames_folder
-        }), 200
-    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @edits_bp.route('/video/<video_id>/filter', methods=['POST'])
@@ -441,9 +409,128 @@ def edit_video_filter(video_id):
         processed_video = video_service.apply_filter(video_path, filter_type)
         output_path = save_processed_video(processed_video, os.path.basename(video_path))
         
+        new_video_id = os.path.basename(output_path).split('_')[1] + '_' + os.path.basename(output_path).split('_')[2]
+        
         return jsonify({
             'message': f'{filter_type} filter applied successfully',
-            'filepath': output_path
+            'filepath': output_path,
+            'id': new_video_id,
+            'filename': os.path.basename(output_path)
         }), 200
     except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@edits_bp.route('/video/<video_id>/rotate', methods=['POST'])
+def edit_video_rotate(video_id):
+    """Rotate video by specified angle."""
+    if not MOVIEPY_AVAILABLE:
+        return jsonify({'error': 'Video processing is not available. MoviePy is not installed.'}), 503
+    
+    try:
+        data = request.json or {}
+        angle = float(data.get('angle', 90))
+        
+        video_path = get_video_path(video_id)
+        if not video_path:
+            return jsonify({'error': 'Video not found'}), 404
+        
+        video_service = VideoService(UPLOAD_FOLDER)
+        processed_video = video_service.rotate_video(video_path, angle)
+        output_path = save_processed_video(processed_video, os.path.basename(video_path))
+        
+        new_video_id = os.path.basename(output_path).split('_')[1] + '_' + os.path.basename(output_path).split('_')[2]
+        
+        return jsonify({
+            'message': f'Video rotated {angle} degrees successfully',
+            'filepath': output_path,
+            'id': new_video_id,
+            'filename': os.path.basename(output_path)
+        }), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@edits_bp.route('/video/<video_id>/volume', methods=['POST'])
+def edit_video_volume(video_id):
+    """Adjust video volume."""
+    if not MOVIEPY_AVAILABLE:
+        return jsonify({'error': 'Video processing is not available. MoviePy is not installed.'}), 503
+    
+    try:
+        data = request.json or {}
+        volume = float(data.get('volume', 1.0))
+        
+        video_path = get_video_path(video_id)
+        if not video_path:
+            return jsonify({'error': 'Video not found'}), 404
+        
+        video_service = VideoService(UPLOAD_FOLDER)
+        processed_video = video_service.adjust_volume(video_path, volume)
+        output_path = save_processed_video(processed_video, os.path.basename(video_path))
+        
+        new_video_id = os.path.basename(output_path).split('_')[1] + '_' + os.path.basename(output_path).split('_')[2]
+        
+        return jsonify({
+            'message': 'Video volume adjusted successfully',
+            'filepath': output_path,
+            'id': new_video_id,
+            'filename': os.path.basename(output_path)
+        }), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@edits_bp.route('/video/<video_id>/mute', methods=['POST'])
+def edit_video_mute(video_id):
+    """Remove audio from video."""
+    if not MOVIEPY_AVAILABLE:
+        return jsonify({'error': 'Video processing is not available. MoviePy is not installed.'}), 503
+    
+    try:
+        video_path = get_video_path(video_id)
+        if not video_path:
+            return jsonify({'error': 'Video not found'}), 404
+        
+        video_service = VideoService(UPLOAD_FOLDER)
+        processed_video = video_service.remove_audio(video_path)
+        output_path = save_processed_video(processed_video, os.path.basename(video_path))
+        
+        new_video_id = os.path.basename(output_path).split('_')[1] + '_' + os.path.basename(output_path).split('_')[2]
+        
+        return jsonify({
+            'message': 'Audio removed from video successfully',
+            'filepath': output_path,
+            'id': new_video_id,
+            'filename': os.path.basename(output_path)
+        }), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@edits_bp.route('/video/<video_id>/info', methods=['GET'])
+def get_video_info(video_id):
+    """Get video metadata."""
+    if not MOVIEPY_AVAILABLE:
+        return jsonify({'error': 'Video processing is not available. MoviePy is not installed.'}), 503
+    
+    try:
+        video_path = get_video_path(video_id)
+        if not video_path:
+            return jsonify({'error': 'Video not found'}), 404
+        
+        video_service = VideoService(UPLOAD_FOLDER)
+        info = video_service.get_video_info(video_path)
+        
+        return jsonify({
+            'message': 'Video info retrieved successfully',
+            'info': info
+        }), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500

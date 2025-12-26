@@ -5,7 +5,6 @@ import FilterPanels from '../FilterPanels/FilterPanels';
 import HistoryPanel from '../HistoryPanel/HistoryPanel';
 import { Icons } from '../Icons';
 import { setCurrentImage, setLoading, setEditorState, clearImage } from '../../store/actions/imageActions';
-import { addToHistory, clearHistory } from '../../store/actions/historyActions';
 import { assetAPI, imageAPI } from '../../api';
 import { isValidImageFile, fileToBase64 } from '../../utils/fileHelpers';
 
@@ -29,21 +28,30 @@ const ImageEditor = () => {
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
 
-  // Persist editor state to Redux whenever it changes
-  useEffect(() => {
-    dispatch(setEditorState({
-      previewUrl,
-      imageId,
-      imageDimensions,
-      zoom
-    }));
-  }, [previewUrl, imageId, imageDimensions, zoom, dispatch]);
+  // LOCAL history state - managed directly in ImageEditor for guaranteed reactivity
+  const [historyList, setHistoryList] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
-  // Handle history item selection - restore to that state
-  const handleHistorySelect = useCallback((historyItem) => {
+  // Function to add to history (called by FilterPanels)
+  const addToLocalHistory = useCallback((entry) => {
+    console.log('Adding to local history:', entry);
+    setHistoryList(prev => {
+      // Remove any "future" history when adding new item
+      const newHistory = prev.slice(0, historyIndex + 1);
+      return [...newHistory, entry];
+    });
+    setHistoryIndex(prev => prev + 1);
+  }, [historyIndex]);
+
+  // Function to go to specific history point
+  const goToHistoryPoint = useCallback((index) => {
+    if (index < 0 || index >= historyList.length) return;
+    
+    const historyItem = historyList[index];
+    console.log('Going to history point:', index, historyItem);
+    
     if (historyItem.imageData) {
       setPreviewUrl(historyItem.imageData);
-      // Update dimensions from the restored image
       const img = new Image();
       img.onload = () => {
         setImageDimensions({ width: img.width, height: img.height });
@@ -53,7 +61,18 @@ const ImageEditor = () => {
     if (historyItem.imageId) {
       setImageId(historyItem.imageId);
     }
-  }, []);
+    setHistoryIndex(index);
+  }, [historyList]);
+
+  // Persist editor state to Redux whenever it changes
+  useEffect(() => {
+    dispatch(setEditorState({
+      previewUrl,
+      imageId,
+      imageDimensions,
+      zoom
+    }));
+  }, [previewUrl, imageId, imageDimensions, zoom, dispatch]);
 
   const handleFileSelect = async (event) => {
     const file = event.target.files[0];
@@ -89,15 +108,15 @@ const ImageEditor = () => {
       setImageId(uploadedImage.id);
       dispatch(setCurrentImage(uploadedImage));
       
-      // Add initial state to history
-      dispatch(addToHistory({
+      // Add initial state to LOCAL history
+      addToLocalHistory({
         id: Date.now(),
         operation: 'Upload',
         params: { filename: selectedFile.name },
         timestamp: new Date().toISOString(),
-        imageData: previewUrl,  // Store the original image
+        imageData: previewUrl,
         imageId: uploadedImage.id
-      }));
+      });
     } catch (error) {
       console.error('Upload error:', error);
       alert('Failed to upload image');
@@ -136,8 +155,10 @@ const ImageEditor = () => {
     setIsCropping(false);
     setCropStart(null);
     setCropEnd(null);
-    dispatch(clearImage());  // Clear all image state in Redux
-    dispatch(clearHistory());  // Clear history on reset
+    dispatch(clearImage());
+    // Clear local history
+    setHistoryList([]);
+    setHistoryIndex(-1);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -230,15 +251,15 @@ const ImageEditor = () => {
           height: response.data.dimensions.cropped.height
         });
         
-        // Add crop to history
-        dispatch(addToHistory({
+        // Add crop to LOCAL history
+        addToLocalHistory({
           id: Date.now(),
           operation: 'Crop',
           params: cropRect,
           timestamp: new Date().toISOString(),
           imageData: response.data.image,
           imageId: response.data.id || imageId
-        }));
+        });
       }
       
       if (response.data.id) {
@@ -493,6 +514,7 @@ const ImageEditor = () => {
                 img.src = base64Image;
               }}
               onImageIdChange={(newId) => setImageId(newId)}
+              onAddHistory={addToLocalHistory}
             />
             <div className="action-buttons">
               <button className="btn btn-cancel" onClick={handleReset}>
@@ -514,7 +536,7 @@ const ImageEditor = () => {
         )}
       </div>
 
-      {/* History Panel - Toggleable (always mounted to maintain subscription) */}
+      {/* History Panel - Toggleable */}
       <div className={`history-drawer ${showHistory ? 'open' : ''}`}>
         <div className="history-drawer-header">
           <h3><Icons.History size={18} /> History</h3>
@@ -522,7 +544,11 @@ const ImageEditor = () => {
             <Icons.Close size={18} />
           </button>
         </div>
-        <HistoryPanel onHistorySelect={handleHistorySelect} />
+        <HistoryPanel 
+          historyItems={historyList}
+          currentIndex={historyIndex}
+          onHistorySelect={goToHistoryPoint}
+        />
       </div>
     </div>
   );

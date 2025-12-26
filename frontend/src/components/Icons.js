@@ -361,6 +361,73 @@ export const Icons = {
       <circle cx="20" cy="12" r="2" stroke={color} strokeWidth="1.5" />
       <path d="M12 6V9M12 15V18M6 12H9M15 12H18" stroke={color} strokeWidth="1.5" />
     </svg>
+  ),
+
+  // Rewind
+  Rewind: ({ size = 24, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 19L2 12L11 5V19Z" fill={color} />
+      <path d="M22 19L13 12L22 5V19Z" fill={color} />
+    </svg>
+  ),
+
+  // Fast Forward
+  FastForward: ({ size = 24, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 5L22 12L13 19V5Z" fill={color} />
+      <path d="M2 5L11 12L2 19V5Z" fill={color} />
+    </svg>
+  ),
+
+  // Volume X (Mute)
+  VolumeX: ({ size = 24, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M23 9L17 15M17 9L23 15" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
+
+  // Volume 2 (Full volume)
+  Volume2: ({ size = 24, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M15.54 8.46C16.4774 9.39764 17.004 10.6692 17.004 11.995C17.004 13.3208 16.4774 14.5924 15.54 15.53" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M19.07 4.93C20.9447 6.80528 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
+
+  // Volume (regular volume icon)
+  Volume: ({ size = 24, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M15.54 8.46C16.4774 9.39764 17.004 10.6692 17.004 11.995C17.004 13.3208 16.4774 14.5924 15.54 15.53" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
+
+  // Rotate CW
+  Rotate: ({ size = 24, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M23 4V10H17" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M20.49 15C19.84 16.84 18.61 18.42 16.99 19.49C15.37 20.56 13.45 21.05 11.53 20.89C9.60997 20.72 7.79997 19.91 6.37997 18.58C4.95997 17.25 4.00997 15.48 3.67997 13.56C3.34997 11.64 3.65997 9.67 4.55997 7.94C5.45997 6.21 6.90997 4.82 8.69997 3.99C10.49 3.16 12.51 2.94 14.42 3.35C16.33 3.77 18.03 4.8 19.28 6.28L23 10" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+
+  // Flip Horizontal
+  FlipHorizontal: ({ size = 24, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 3V21" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M16 7L20 12L16 17V7Z" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M8 7L4 12L8 17V7Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  ),
+
+  // Flip Vertical
+  FlipVertical: ({ size = 24, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 12H21" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M7 8L12 4L17 8H7Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M7 16L12 20L17 16H7Z" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
   )
 };
 

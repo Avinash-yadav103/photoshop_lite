@@ -1,22 +1,9 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import './HistoryPanel.css';
 import { Icons } from '../Icons';
-import { goToHistory } from '../../store/actions/historyActions';
 
-const HistoryPanel = ({ onHistorySelect }) => {
-  const dispatch = useDispatch();
+const HistoryPanel = ({ historyItems = [], currentIndex = -1, onHistorySelect }) => {
   
-  // Get the entire history slice from Redux
-  const historySlice = useSelector((state) => {
-    console.log('Redux state.history:', state.history);
-    return state.history;
-  });
-  
-  // Extract history array and currentIndex with defaults
-  const historyItems = historySlice?.history || [];
-  const currentIndex = historySlice?.currentIndex ?? -1;
-
   console.log('HistoryPanel render - items:', historyItems.length, 'currentIndex:', currentIndex);
 
   // Safe icon renderer
@@ -44,19 +31,16 @@ const HistoryPanel = ({ onHistorySelect }) => {
   };
 
   const handleHistoryClick = (index) => {
-    console.log('Clicking history item:', index, historyItems[index]);
+    console.log('Clicking history item:', index);
     if (index === currentIndex) return;
     
-    dispatch(goToHistory(index));
-    
-    // Call the callback to restore the image state
-    if (onHistorySelect && historyItems[index]) {
-      onHistorySelect(historyItems[index]);
+    if (onHistorySelect) {
+      onHistorySelect(index);
     }
   };
 
   // Empty state
-  if (historyItems.length === 0) {
+  if (!historyItems || historyItems.length === 0) {
     return (
       <div className="history-panel">
         <div className="history-empty">
