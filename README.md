@@ -1,7 +1,7 @@
 # Professional Image & Video Editing Software (Python + OpenCV + Flask)
 
 ## 📌 Project Overview
-This project is a **Professional Image and Video Editing Platform** built entirely in **Python**, leveraging **OpenCV** for image/video processing and **Flask** for providing a web-based interface. The platform aims to provide advanced editing features similar to industry-level applications, supporting filters, transformations, and export options.
+This project is a **Professional Image and Video Editing Platform** built entirely in **Python**, leveraging **OpenCV** for image/video processing and **Flask** for providing a web-based interface. The platform aims to provide advanced editing features similar to industry-level applications, supporting filters, transformations, and export optionss.
 
 ---
 
