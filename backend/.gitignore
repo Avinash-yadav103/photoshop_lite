@@ -1,4 +1,7 @@
-/venv 
+venv/
 .env
-.env.example
-# Dockerfile
+__pycache__/
+*.pyc
+*.db
+app/uploads/*
+!app/uploads/.gitkeep

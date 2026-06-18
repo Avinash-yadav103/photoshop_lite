@@ -105,7 +105,6 @@ def edit_contrast(image_id):
         lambda img: adjust_contrast(img, factor),
         'Contrast adjusted successfully'
     )
-
 @edits_bp.route('/image/<image_id>/gaussian-blur', methods=['POST'])
 def edit_gaussian_blur(image_id):
     """Apply Gaussian blur."""

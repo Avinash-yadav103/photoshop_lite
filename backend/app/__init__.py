@@ -1,18 +1,25 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
 db = SQLAlchemy()
 
+CONFIG_MAP = {
+    'development': 'app.config.DevelopmentConfig',
+    'testing': 'app.config.TestingConfig',
+    'production': 'app.config.ProductionConfig',
+}
+
 def create_app():
     app = Flask(__name__)
-    
-    # Load configuration
-    app.config.from_object('app.config.DevelopmentConfig')
-    
-    # Initialize extensions
+
+    env = os.environ.get('FLASK_ENV', 'development')
+    app.config.from_object(CONFIG_MAP.get(env, CONFIG_MAP['development']))
+
+    cors_origins = os.environ.get('CORS_ORIGINS', '*')
     db.init_app(app)
-    CORS(app)
+    CORS(app, origins=cors_origins.split(','))
     
     # Health check route
     @app.route('/')

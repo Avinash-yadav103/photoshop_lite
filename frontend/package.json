@@ -4,8 +4,8 @@
   "description": "A professional image and video editing software built with Python, OpenCV, and Flask.",
   "main": "src/index.js",
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "build": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -22,7 +22,7 @@
     "eslint": "^7.32.0",
     "eslint-config-react-app": "^6.0.0"
   },
-  "homepage": "http://localhost:3000",
+  "homepage": ".",
   "license": "MIT",
   "browserslist": {
     "production": [

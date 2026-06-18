@@ -20,9 +20,11 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Testing configuration."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql://username:password@localhost/test_db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'postgresql://username:password@localhost/test_db'
 
 
 class ProductionConfig(Config):
     """Production configuration."""
-    SQLALCHEMY_DATABASE_URI = 'postgresql://username:password@localhost/prod_db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
