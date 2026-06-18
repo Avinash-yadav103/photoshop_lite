@@ -5,6 +5,22 @@ This project is a **Professional Image and Video Editing Platform** built entire
 
 ---
 
+## 🎨 Platform Visuals
+
+### Image Editor Interface
+![Image Editor](./assets/image-editor.png)
+*Advanced image editing with real-time preview and comprehensive filter controls*
+
+### Video Editor Interface
+![Video Editor](./assets/video-editor.png)
+*Frame-by-frame video editing with timeline scrubbing and audio controls*
+
+### Advanced Filters & Effects
+![Morphological Operations](./assets/filters-demo.png)
+*Morphological operations including edge detection, erosion, dilation, and more*
+
+---
+
 ## 🎯 Core Functionalities
 
 ### 🔹 Image Editing Features
